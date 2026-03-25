@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Dodge_AI-ERP_Explorer-0052CC?style=for-the-badge&logo=sap" alt="Dodge AI Logo" />
-  <h1>🚀 Dodge AI: # Forward Deployed Engineer - Task Details</h1>
+  <h1>🚀 Dodge AI: Forward Deployed Engineer - Task Details</h1>
   <h3>Graph-Based Data Modeling and Query System</h3>
   
   <p align="center">
@@ -65,6 +65,14 @@ graph TB
     style Backend fill:#f0fff4,stroke:#00a36c,stroke-width:2px
     style Data fill:#fff5f5,stroke:#e53e3e,stroke-width:2px
 ```
+
+### 🛰️ Step-by-Step Execution Breakdown
+
+1.  **User Input Analysis:** The frontend captures the natural language query and transmits it to the **FastAPI Intent Router**.
+2.  **Intent Classification:** The LLM analyzes the query to determine if it's a **Geographic/Graph Trace** (e.g., *"Trace this order"*), a **Relational Audit** (e.g., *"Show me late shipments"*), or a **Contextual Explanation** (e.g., *"Why is this order stuck?"*).
+3.  **Dynamic SQL Synthesis:** Based on the classified intent, our **Text-to-SQL Generator** builds a precise, high-performance JOIN across relational headers and items in the SQLite database.
+4.  **Graph Serialization:** The backend processes the raw SQL rowsets into a **JSON Graph Object** (Nodes & Edges), calculating vibrance colors and distinct shapes for each ERP document type.
+5.  **Interactive Rendering:** The **Cytoscape.js** engine renders the vectorized graph on the glassmorphic canvas, while the LLM summary provides a clean, human-readable answer in the chat panel.
 
 ---
 
