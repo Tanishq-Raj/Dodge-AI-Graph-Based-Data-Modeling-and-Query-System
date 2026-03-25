@@ -38,21 +38,32 @@ Dodge AI provides a **dynamic graph visualization** and an **interactive AI chat
 ---
 
 ## 🚦 System Working Flow
+The Dodge AI engine follows a sophisticated three-layer process to transform natural language into interactive ERP insights.
 
 ```mermaid
-graph TD
-    A[User Query] --> B{Intent Detector}
-    B -- "Trace/Graph" --> C[Intent-Based SQL Generator]
-    B -- "General Analysis" --> D[Relational Query Engine]
-    
-    C --> E[(SQLite ERP Data)]
-    D --> E
-    
-    E --> F[Raw Data Node/Edge Processing]
-    F --> G[LLM Contextual Summarizer]
-    
-    G --> H[Glassmorphic UI]
-    H --> I[Dynamic Graph Interaction]
+graph TB
+    subgraph Frontend ["🎨 Glassmorphic Frontend (Vite/React)"]
+        UI[User Interface] -->|Query| Controller[Chat Controller]
+        Controller -->|Fetch| API[API Interface]
+        Response -->|Render| Graph[Cytoscape.js Graph]
+        Response -->|Display| Markdown[AI Summary]
+    end
+
+    subgraph Backend ["⚙️ ASP-Core Backend (FastAPI)"]
+        API -->|JSON Payload| Intent[LLM Intent Router]
+        Intent -->|Classified Intent| Generator[Text-to-SQL Generator]
+        Generator -->|Structured SQL| Executor[Safe SQL Executor]
+    end
+
+    subgraph Data ["💾 ERP Data Layer (SQLite)"]
+        Executor -->|Read Only| DB[(ERP data.db)]
+        DB -->|Rowset| Processor[Node/Edge Processor]
+        Processor -->|JSON Graph| Response
+    end
+
+    style Frontend fill:#f0f7ff,stroke:#0052cc,stroke-width:2px
+    style Backend fill:#f0fff4,stroke:#00a36c,stroke-width:2px
+    style Data fill:#fff5f5,stroke:#e53e3e,stroke-width:2px
 ```
 
 ---
@@ -93,7 +104,7 @@ dodge-ai/
 
 <div align="center">
   <br/>
-  <b>Live Application:</b> <a href="https://dodge-ai-graph-based-data-modeling.vercel.app">dodge-ai.vercel.app</a>
+  <b>Live Application:</b> <a href="https://dodge-ai-graph-based-data-modeling.vercel.app">dodge-ai-graph-based-data-modeling.vercel.app</a>
   <br/>
   <i>Engineered by Dodge AI for High-Speed ERP Operational Intelligence.</i>
 </div>
