@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Node
+node_modules/
+dist/
+build/
+.DS_Store
+
+# Frontend specifics (Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.env.local
+
+# Database (optional, but keeping it for now since user wants it for deployment)
+# data.db

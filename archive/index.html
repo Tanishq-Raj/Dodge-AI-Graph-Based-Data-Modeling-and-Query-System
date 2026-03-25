@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dodge AI — Order to Cash Graph System</title>
+  <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+  <style>
+    :root {
+      --blue: #3b82f6; --light-blue: #93c5e8; --red: #f87171; 
+      --purple: #8b5cf6; --amber: #f59e0b; --green: #22c55e;
+      --bg: #f5f5f0; --white: #ffffff; --border: #e2e2dc;
+      --text: #1a1a1a; --muted: #8a8a84;
+    }
+    
+    * { box-sizing: border-box; }
+    
+    body {
+      margin: 0; padding: 0; height: 100vh; overflow: hidden;
+      display: flex; flex-direction: column;
+      font-family: -apple-system, 'SF Pro Text', 'Segoe UI', sans-serif;
+      color: var(--text); background: var(--white);
+    }
+    
+    /* Animations */
+    @keyframes fillBar { from { width: 0; } to { width: 100%; } }
+    @keyframes fadeOut { to { opacity: 0; pointer-events: none; } }
+    @keyframes pulse-amber { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+    @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* LOADING OVERLAY */
+    #loading-overlay {
+      position: absolute; inset: 0; background: var(--white); z-index: 10000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      animation: fadeOut 0.3s ease 2.5s forwards;
+    }
+    #loading-overlay h1 { margin: 0; font-size: 24px; font-weight: 600; }
+    #loading-overlay p { margin: 8px 0 24px; color: var(--muted); font-size: 14px; }
+    .progress-track { width: 240px; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .progress-bar { height: 100%; background: var(--text); animation: fillBar 2.5s ease-out forwards; }
+
+    /* BUTTONS & TABS */
+    button { font-family: inherit; transition: all 0.15s ease; border: none; cursor: pointer; }
+    .btn-white { background: var(--white); border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; }
+    .btn-white:hover { background: #f9f9f9; }
+    .btn-black { background: var(--text); color: var(--white); border: 1px solid var(--text); padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; }
+    .btn-black:hover { opacity: 0.9; }
+
+    .filter-tabs {
+      position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 10;
+      display: flex; gap: 4px; background: var(--white); padding: 4px; border: 1px solid var(--border); border-radius: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .filter-tab {
+      padding: 6px 14px; font-size: 13px; font-weight: 500; border-radius: 20px; cursor: pointer; color: var(--muted); transition: all 0.15s ease;
+    }
+    .filter-tab:hover { color: var(--text); }
+    .filter-tab.active { background: var(--text); color: var(--white); }
+
+    /* GRAPH OVERLAYS */
+    .popup-card {
+      position: absolute; background: var(--white); border-radius: 14px; padding: 16px; min-width: 270px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.1); display: none; z-index: 20; border: 1px solid var(--border);
+      animation: popIn 0.15s ease-out; font-size: 12px;
+    }
+    .legend-card {
+      position: absolute; bottom: 20px; left: 20px; background: var(--white); border-radius: 10px; padding: 12px 16px;
+      border: 1px solid var(--border); z-index: 10; font-size: 12px; display: grid; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .legend-row { display: flex; align-items: center; gap: 8px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+    
+    .count-badge {
+      position: absolute; bottom: 62px; left: 20px; background: var(--white); border-radius: 8px; padding: 6px 10px;
+      border: 1px solid var(--border); z-index: 10; font-size: 12px; font-weight: 500; color: var(--muted); box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    /* CHAT ELEMENT STYLES */
+    .chip {
+      padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg);
+      font-size: 12px; cursor: pointer; transition: all 0.15s ease; color: var(--text); font-weight: 500; white-space: nowrap;
+    }
+    .chip:hover { background: var(--text); color: var(--white); border-color: var(--text); }
+    
+    .bubble-user { align-self: flex-end; background: var(--text); color: var(--white); font-size: 14px; padding: 12px 16px; border-radius: 14px 14px 4px 14px; max-width: 85%; line-height: 1.4; margin-bottom: 4px; }
+    .bubble-ai { align-self: flex-start; background: #fcfcfc; border: 1px solid var(--border); color: var(--text); font-size: 14px; padding: 12px 16px; border-radius: 4px 14px 14px 14px; max-width: 90%; line-height: 1.5; margin-bottom: 24px; position: relative; }
+    
+    .intent-badge {
+      display: inline-flex; align-items: center; justify-content: center; position: absolute; top: -10px; left: 0px;
+      padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; color: var(--white); border: 2px solid var(--white);
+    }
+    
+    .reasoning-panel { margin-top: 12px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--white); }
+    .reasoning-header { padding: 8px 12px; font-size: 12px; background: #fafafa; border-bottom: 1px solid var(--border); cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center;}
+    .reasoning-header:hover { background: #f5f5f0; }
+    .reasoning-content { padding: 12px; display: none; font-size: 12px; }
+    .sql-block { background: #1a1a1a; color: #93c5e8; font-family: monospace; padding: 12px; border-radius: 6px; overflow-x: auto; margin-top: 8px; white-space: pre-wrap; font-size: 11px;}
+    
+    .dot { width: 4px; height: 4px; background: var(--muted); border-radius: 50%; display: inline-block; animation: bounce 1.4s infinite ease-in-out both; }
+    .dot1 { animation-delay: -0.32s; }
+    .dot2 { animation-delay: -0.16s; }
+    
+    /* Scrollbar for chat */
+    #chat-messages::-webkit-scrollbar { width: 6px; }
+    #chat-messages::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loading-overlay">
+    <h1>Dodge AI</h1>
+    <p>Loading Order to Cash Graph System...</p>
+    <div class="progress-track"><div class="progress-bar"></div></div>
+  </div>
+
+  <!-- TOP NAV -->
+  <nav style="height:48px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; padding:0 20px; flex-shrink:0;">
+    <div style="display:flex; align-items:center; gap:16px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="cursor:pointer;"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      <div style="font-size:14px; color:var(--muted)">Mapping / <span style="font-weight:600; color:var(--text);">Order to Cash</span></div>
+    </div>
+    <div id="nav-stats" style="display:flex; gap:24px; font-size:13px; color:var(--muted);">
+      <!-- Populated via JS -->
+    </div>
+  </nav>
+
+  <!-- MAIN AREA -->
+  <div style="flex:1; display:flex; overflow:hidden;">
+    
+    <!-- GRAPH PANEL -->
+    <div style="flex:1; position:relative; background:var(--bg);">
+      <div id="cy" style="width:100%; height:100%;"></div>
+      
+      <!-- Controls -->
+      <div style="position:absolute; top:16px; left:16px; display:flex; gap:8px; z-index:10;">
+        <button class="btn-white" onclick="cy.fit()">Minimize</button>
+        <button class="btn-black" id="btn-toggle-labels" onclick="toggleLabels()">Hide Granular Overlay</button>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="filter-tabs" id="filter-tabs">
+        <div class="filter-tab active" onclick="setFilter('All')">All</div>
+        <div class="filter-tab" onclick="setFilter('SalesOrder')">Orders</div>
+        <div class="filter-tab" onclick="setFilter('Delivery')">Delivery</div>
+        <div class="filter-tab" onclick="setFilter('BillingDoc')">Billing</div>
+        <div class="filter-tab" onclick="setFilter('JournalEntry')">Journal</div>
+        <div class="filter-tab" onclick="setFilter('Payment')">Payment</div>
+      </div>
+
+      <!-- Node Popup -->
+      <div id="node-popup" class="popup-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+          <div>
+            <div id="popup-badge" style="display:inline-block; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600; color:white; margin-bottom:6px;">TYPE</div>
+            <div id="popup-title" style="font-size:15px; font-weight:600; margin-bottom:4px;">Document ID</div>
+          </div>
+          <svg onclick="hidePopup()" style="cursor:pointer; color:var(--muted);" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </div>
+        <div id="popup-rows" style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--border);"></div>
+        <div style="font-size:10px; color:var(--muted); margin-bottom:12px; font-style:italic;">Additional fields hidden for readability</div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-weight:500; color:var(--muted);" id="popup-conns">Connections: 0</div>
+          <button class="btn-black" onclick="exploreNeighbors()">Explore neighbors</button>
+        </div>
+      </div>
+
+      <!-- Count Badge -->
+      <div id="count-badge" class="count-badge">0 nodes &middot; 0 edges</div>
+
+      <!-- Legend -->
+      <div class="legend-card">
+        <div class="legend-row"><div class="legend-dot" style="background:var(--blue)"></div>Sales Order</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--light-blue)"></div>Delivery</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--red)"></div>Billing Doc</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--purple)"></div>Journal Entry</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--amber)"></div>Payment</div>
+        <div class="legend-row"><div class="legend-dot" style="background:var(--green)"></div>Customer</div>
+      </div>
+    </div>
+
+    <!-- CHAT SIDEBAR -->
+    <div style="width:380px; border-left:1px solid var(--border); display:flex; flex-direction:column; background:var(--white);">
+      <div style="padding:16px 20px; border-bottom:1px solid var(--border);">
+        <div style="font-weight:600; font-size:15px;">Chat with Graph</div>
+        <div style="color:var(--muted); font-size:13px; margin-top:2px;">Order to Cash</div>
+      </div>
+      
+      <div style="padding:18px 20px; border-bottom:1px solid var(--border); display:flex; gap:12px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:var(--text); color:var(--white); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; flex-shrink:0;">D</div>
+        <div>
+           <div style="font-weight:600; font-size:14px;">Dodge AI</div>
+           <div style="color:var(--muted); font-size:12px; margin-bottom:6px;">Graph Agent</div>
+           <div style="font-size:13.5px; line-height:1.4;">Hi! I can help you analyze the <strong>Order to Cash</strong> process.</div>
+        </div>
+      </div>
+
+      <div style="padding:12px 20px; border-bottom:1px solid var(--border); display:flex; flex-wrap:wrap; gap:8px;">
+        <div class="chip" onclick="setInput('Top billed products')">Top billed products</div>
+        <div class="chip" onclick="setInput('Unpaid billing docs')">Unpaid billing docs</div>
+        <div class="chip" onclick="setInput('Trace billing doc 91150187')">Trace billing doc 91150187</div>
+        <div class="chip" onclick="setInput('Incomplete flows')">Incomplete flows</div>
+      </div>
+
+      <div id="chat-messages" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column;">
+         <!-- Messages will be appended here -->
+      </div>
+
+      <div style="padding:14px 20px; border-top:1px solid var(--border);">
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px; font-size:12px; color:var(--muted);">
+           <div id="status-dot" style="width:8px; height:8px; border-radius:50%; background:var(--green);"></div>
+           <div id="status-text" style="font-weight:500;">Dodge AI is awaiting instructions</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <input id="chat-input" placeholder="Analyze anything" style="flex:1; padding:10px 14px; border:1px solid var(--border); border-radius:12px; font-size:14px; outline:none; font-family:inherit;" onkeypress="if(event.key === 'Enter') handleSend()">
+          <button class="btn-black" style="border-radius:12px; height:42px; padding:0 18px;" onclick="handleSend()">
+             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top:2px;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 🔥 COLAB NGROK URL 🔥
+    // Replace this string with the PUBLIC URL printed by your Colab script!
+    const API_BASE = 'https://abc123.ngrok-free.app';
+    let cy;
+    let selectedNodeId = null;
+    let labelsVisible = true;
+
+    // DEMO DATA (Fallback)
+    const demoData = {
+      nodes: [
+        { data: { id: '740506', label: '740506', type: 'SalesOrder', amount: '17108.25', currency: 'INR', status: 'C' }},
+        { data: { id: '740507', label: '740507', type: 'SalesOrder', amount: '19021.27', currency: 'INR', status: 'C' }},
+        { data: { id: '80737721', label: '80737721', type: 'Delivery', status: 'Completed' }},
+        { data: { id: '80737722', label: '80737722', type: 'Delivery', status: 'Completed' }},
+        { data: { id: '91150187', label: '91150187', type: 'BillingDoc', netValue: '17108.25' }},
+        { data: { id: '91150188', label: '91150188', type: 'BillingDoc', netValue: '19021.27' }},
+        { data: { id: '9400635958', label: '9400635958', type: 'JournalEntry', gl_account: '15500020' }},
+        { data: { id: '310000108', label: 'Cardenas Parker', type: 'Customer', region: 'Millerborough' }},
+        { data: { id: 'P1', label: 'TXN-9A82B', type: 'Payment', amount: '17108.25', status: 'Cleared' }}
+      ],
+      edges: [
+        { data: { source: '740506', target: '80737721' } },
+        { data: { source: '740507', target: '80737722' } },
+        { data: { source: '80737721', target: '91150187' } },
+        { data: { source: '80737722', target: '91150188' } },
+        { data: { source: '91150187', target: '9400635958' } },
+        { data: { source: '9400635958', target: 'P1' } },
+        { data: { source: '310000108', target: '740506' } },
+        { data: { source: '310000108', target: '740507' } }
+      ]
+    };
+
+    // INIT APP
+    async function init() {
+      // Setup graph array
+      let elements = [];
+      try {
+        const hRes = await fetch(API_BASE + '/health').catch(()=>null);
+        if(hRes && hRes.ok) {
+           const gRes = await fetch(API_BASE + '/graph').catch(()=>null);
+           if(gRes && gRes.ok) elements = await gRes.json();
+           
+           const sRes = await fetch(API_BASE + '/stats').catch(()=>null);
+           if(sRes && sRes.ok) {
+              const stats = await sRes.json();
+              document.getElementById('nav-stats').innerHTML = `
+                <div>Orders: <span style="font-weight:600; color:#1a1a1a">${stats.orders||0}</span></div>
+                <div>Deliveries: <span style="font-weight:600; color:#1a1a1a">${stats.deliveries||0}</span></div>
+                <div>Billing: <span style="font-weight:600; color:#1a1a1a">${stats.billing||0}</span></div>
+                <div>Journals: <span style="font-weight:600; color:#1a1a1a">${stats.journals||0}</span></div>
+              `;
+           }
+        } else {
+           throw new Error("Offline");
+        }
+      } catch (e) {
+        console.warn("Backend offline. Using Demo Data.");
+        elements = [...demoData.nodes, ...demoData.edges];
+        document.getElementById('nav-stats').innerHTML = `
+          <div>Orders: <span style="font-weight:600; color:#1a1a1a">2</span></div>
+          <div>Deliveries: <span style="font-weight:600; color:#1a1a1a">2</span></div>
+          <div>Billing: <span style="font-weight:600; color:#1a1a1a">2</span></div>
+          <div>Journals: <span style="font-weight:600; color:#1a1a1a">1</span></div>
+        `;
+      }
+
+      // Process classes for Cytoscape
+      elements.forEach(el => {
+         if (el.data.source) return; // is edge
+         const t = el.data.type;
+         if(t==='SalesOrder') { el.classes = 'hub'; }
+         else if(t==='Customer') { el.classes = 'customer'; }
+         else if(t==='Delivery') { el.classes = 'connected'; }
+         else if(t==='BillingDoc') { el.classes = 'leaf billing'; }
+         else if(t==='JournalEntry') { el.classes = 'leaf journal'; }
+         else if(t==='Payment') { el.classes = 'leaf payment'; }
+      });
+
+      cy = cytoscape({
+        container: document.getElementById('cy'),
+        elements: elements,
+        style: [
+          { selector: 'node', style: { 'label': 'data(label)', 'font-size': 10, 'text-valign': 'bottom', 'text-margin-y': 4, 'color': '#555', 'font-family': '-apple-system, sans-serif' } },
+          { selector: '.hub', style: { width: 22, height: 22, 'background-color': 'var(--blue)' } },
+          { selector: '.customer', style: { width: 22, height: 22, 'background-color': 'var(--green)' } },
+          { selector: '.connected', style: { width: 14, height: 14, 'background-color': 'var(--light-blue)' } },
+          { selector: '.leaf.billing', style: { width: 9, height: 9, 'background-color': 'var(--red)' } },
+          { selector: '.leaf.journal', style: { width: 9, height: 9, 'background-color': 'var(--purple)' } },
+          { selector: '.leaf.payment', style: { width: 9, height: 9, 'background-color': 'var(--amber)' } },
+          { selector: 'edge', style: { width: 1, 'line-color': 'rgba(147,197,232,0.4)', 'curve-style': 'bezier', 'target-arrow-color': 'rgba(147,197,232,0.4)', 'target-arrow-shape': 'triangle', 'arrow-scale': 0.8 } },
+          
+          { selector: '.highlighted', style: { 'border-width': 2.5, 'border-color': '#1a1a1a', 'width': '30px', 'height': '30px', 'z-index': 100 } },
+          { selector: '.dimmed', style: { 'opacity': 0.15 } },
+          { selector: '.hide-label', style: { 'text-opacity': 0 } }
+        ],
+        layout: { name: 'cose', nodeRepulsion: 12000, idealEdgeLength: 100, animate: true, animationDuration: 1500 }
+      });
+
+      document.getElementById('count-badge').innerHTML = `${cy.nodes().length} nodes &middot; ${cy.edges().length} edges`;
+
+      // Cy Interactions
+      cy.on('tap', 'node', function(evt){
+        const node = evt.target;
+        selectedNodeId = node.id();
+        
+        // Highlight logic
+        cy.elements().addClass('dimmed').removeClass('highlighted');
+        node.removeClass('dimmed').addClass('highlighted');
+        node.connectedEdges().removeClass('dimmed');
+        node.connectedEdges().connectedNodes().removeClass('dimmed');
+        
+        showPopup(node, evt.renderedPosition);
+      });
+
+      cy.on('tap', function(evt){
+        if(evt.target === cy){
+           cy.elements().removeClass('dimmed').removeClass('highlighted');
+           hidePopup();
+           selectedNodeId = null;
+        }
+      });
+      
+      cy.on('zoom pan', hidePopup);
+    }
+
+    // CONTROLS & POPUP
+    function toggleLabels() {
+      labelsVisible = !labelsVisible;
+      const btn = document.getElementById('btn-toggle-labels');
+      if (labelsVisible) {
+        cy.nodes().removeClass('hide-label');
+        btn.innerText = "Hide Granular Overlay";
+      } else {
+        cy.nodes().addClass('hide-label');
+        btn.innerText = "Show Granular Overlay";
+      }
+    }
+
+    function setFilter(type) {
+      document.querySelectorAll('.filter-tab').forEach(el => el.classList.remove('active'));
+      event.target.classList.add('active');
+      cy.elements().removeClass('dimmed').removeClass('highlighted');
+      if(type !== 'All') {
+        cy.nodes().forEach(n => {
+           if(n.data('type') !== type) n.addClass('dimmed');
+        });
+      }
+    }
+
+    function showPopup(node, pos) {
+      const p = document.getElementById('node-popup');
+      p.style.display = 'block';
+      let x = pos.x + 20; let y = pos.y - 40;
+      if (x + 270 > cy.width()) x = pos.x - 290;
+      p.style.left = x + 'px'; p.style.top = y + 'px';
+
+      const d = node.data();
+      document.getElementById('popup-title').innerText = d.id;
+      
+      let badgeColor = 'var(--text)';
+      if(d.type==='SalesOrder') badgeColor='var(--blue)';
+      if(d.type==='Delivery') badgeColor='var(--green)';
+      if(d.type==='BillingDoc') badgeColor='var(--amber)';
+      if(d.type==='JournalEntry') badgeColor='var(--purple)';
+      if(d.type==='Payment') badgeColor='var(--red)';
+      
+      const badge = document.getElementById('popup-badge');
+      badge.innerText = d.type;
+      badge.style.backgroundColor = badgeColor;
+
+      let rowsHtml = '';
+      let count = 0;
+      for(const [k,v] of Object.entries(d)) {
+        if(['id','type','label'].includes(k)) continue;
+        if(count >= 8) break;
+        rowsHtml += `<div style="display:flex; justify-content:space-between"><span style="color:var(--muted); font-weight:500;">${k}</span><span style="font-weight:500; text-align:right; max-width:140px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${v}</span></div>`;
+        count++;
+      }
+      if(count===0) rowsHtml = `<div style="color:var(--muted)">No additional metadata</div>`;
+      
+      document.getElementById('popup-rows').innerHTML = rowsHtml;
+      document.getElementById('popup-conns').innerText = `Connections: ${node.connectedEdges().length}`;
+    }
+
+    function hidePopup() { document.getElementById('node-popup').style.display = 'none'; }
+
+    function exploreNeighbors() {
+       if(!selectedNodeId) return;
+       const n = cy.getElementById(selectedNodeId);
+       const neighbors = n.connectedEdges().connectedNodes();
+       neighbors.addClass('highlighted');
+       n.removeClass('dimmed').addClass('highlighted');
+       cy.fit(neighbors.union(n), 50);
+    }
+
+    // CHAT LOGIC
+    function setInput(txt) {
+      document.getElementById('chat-input').value = txt;
+      handleSend();
+    }
+
+    function setThinking(active) {
+      const dot = document.getElementById('status-dot');
+      const txt = document.getElementById('status-text');
+      if (active) {
+        dot.style.background = 'var(--amber)';
+        dot.style.animation = 'pulse-amber 1s infinite ease-in-out';
+        txt.innerText = 'Dodge AI is thinking...';
+      } else {
+        dot.style.background = 'var(--green)';
+        dot.style.animation = 'none';
+        txt.innerText = 'Dodge AI is awaiting instructions';
+      }
+    }
+
+    function getBadgeColor(intent) {
+       let bg = 'var(--text)';
+       if(intent.includes('Trace')) bg = 'var(--blue)';
+       if(intent.includes('Anomaly')) bg = 'var(--red)';
+       if(intent.includes('Aggregat')) bg = 'var(--green)';
+       if(intent.includes('Lookup')) bg = 'var(--amber)';
+       return bg;
+    }
+
+    function toggleReasoning(id) {
+       const el = document.getElementById(id);
+       el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    const guardrails = ["who is", "poem", "joke", "weather", "translate"];
+
+    async function handleSend() {
+      const inp = document.getElementById('chat-input');
+      const q = inp.value.trim();
+      if(!q) return;
+      inp.value = '';
+
+      const msgs = document.getElementById('chat-messages');
+      // Append user bubbles
+      msgs.innerHTML += `<div class="bubble-user">${q}</div>`;
+      msgs.scrollTop = msgs.scrollHeight;
+
+      // Check guardrails
+      const qlow = q.toLowerCase();
+      if(guardrails.some(g => qlow.includes(g))) {
+         setThinking(true);
+         setTimeout(()=>{
+            setThinking(false);
+            msgs.innerHTML += `
+             <div class="bubble-ai" style="border-color:var(--red);">
+               <div class="intent-badge" style="background:var(--red);">🚫 Out of Scope</div>
+               This system only answers questions about the Order to Cash dataset. Please ask about orders, deliveries, billing, or payments.
+             </div>
+            `;
+            msgs.scrollTop = msgs.scrollHeight;
+         }, 800);
+         return;
+      }
+
+      // Add typing indicator
+      const loadId = 'load-' + Date.now();
+      msgs.innerHTML += `
+        <div id="${loadId}" class="bubble-ai">
+           <div class="dot dot1"></div><div class="dot dot2" style="margin:0 2px;"></div><div class="dot dot3"></div>
+        </div>
+      `;
+      msgs.scrollTop = msgs.scrollHeight;
+      setThinking(true);
+
+      // API Call
+      let answer="", intent="🔍 Lookup", planSteps=[], sql="", toHighlight=[];
+      
+      try {
+        const res = await fetch(API_BASE + '/chat', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({query: q, history: []})
+        });
+        if(res.ok) {
+           const data = await res.json();
+           answer = data.answer || "Query completed.";
+           intent = data.intent || intent;
+           if(data.plan) planSteps = data.plan.steps || [];
+           sql = data.sql || "";
+           toHighlight = data.highlight || [];
+        } else {
+           throw new Error("API failed");
+        }
+      } catch (e) {
+        // Fallback demo mock response
+        await new Promise(r => setTimeout(r, 1000)); // simulate network
+        if(qlow.includes("unpaid") || qlow.includes("invoice")) {
+           intent = "⚠️ Anomaly Detection";
+           answer = `Found **2** outbound deliveries that have not been billed in the current flow.`;
+           planSteps = ["Find all deliveries", "Left join billing documents", "Filter where billing docs are NULL"];
+           sql = "SELECT delivery_id FROM deliveries d LEFT JOIN billing b ON d.ref = b.ref WHERE b.id IS NULL";
+           toHighlight = ['80737721', '80737722'];
+        } else if(qlow.includes("trace")) {
+           intent = "🔗 Flow Trace";
+           answer = `Tracing billing document **91150187**. It originates from Sales Order 740506 via Delivery 80737721 and posts to Journal Entry 9400635958.`;
+           planSteps = ["Lookup BillingDoc 91150187", "Traverse to predecessor (Delivery)", "Traverse to root (Order)"];
+           sql = "SELECT * FROM billing WHERE id='91150187'";
+           toHighlight = ['91150187', '80737721', '740506', '9400635958', '310000108'];
+        } else {
+           answer = `I found matching records for your query.`;
+           planSteps = ["Parse user intent directly.", "Search node labels encompassing the keywords."];
+           sql = "-- Dynamic generation";
+           toHighlight = ['740506', '740507', 'P1'];
+        }
+      }
+
+      document.getElementById(loadId).remove();
+      setThinking(false);
+
+      // Build Reasoning HTML
+      const reasonId = 'reason-' + Date.now();
+      let reasoningHtml = '';
+      if(planSteps.length > 0) {
+         reasoningHtml = `
+           <div class="reasoning-panel">
+              <div class="reasoning-header" onclick="toggleReasoning('${reasonId}')">
+                 <span style="display:flex; align-items:center; gap:6px;">
+                    Reasoning & SQL <span style="background:var(--purple); color:white; padding:1px 6px; border-radius:10px; font-size:10px;">${planSteps.length} Steps</span>
+                 </span>
+                 <span style="font-size:10px; color:var(--muted);">▼ Expand</span>
+              </div>
+              <div id="${reasonId}" class="reasoning-content">
+                 <ol style="margin:0; padding-left:16px; margin-bottom:12px; color:var(--text);">
+                    ${planSteps.map(s => `<li>${s}</li>`).join('')}
+                 </ol>
+                 ${sql ? `<div class="sql-block">${sql}</div>` : ''}
+              </div>
+           </div>
+         `;
+      }
+
+      // Convert Markdown bold
+      const formattedAnswer = answer.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+      msgs.innerHTML += `
+        <div class="bubble-ai">
+           <div class="intent-badge" style="background:${getBadgeColor(intent)}">${intent}</div>
+           <div>${formattedAnswer}</div>
+           ${reasoningHtml}
+        </div>
+      `;
+      msgs.scrollTop = msgs.scrollHeight;
+
+      // Handle graph highlights
+      if(toHighlight && toHighlight.length > 0) {
+         cy.elements().addClass('dimmed').removeClass('highlighted');
+         let collection = cy.collection();
+         toHighlight.forEach(id => {
+            const n = cy.getElementById(id);
+            if(n.length) {
+               n.removeClass('dimmed').addClass('highlighted');
+               collection = collection.union(n);
+               n.connectedEdges().removeClass('dimmed');
+            }
+         });
+         cy.animate({ fit: { eles: collection, padding: 50 } }, { duration: 800 });
+      }
+    }
+
+    // RUN INIT
+    window.onload = init;
+  </script>
+</body>
+</html>

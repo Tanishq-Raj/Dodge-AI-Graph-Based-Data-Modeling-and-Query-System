@@ -1,0 +1,58 @@
+Tables in data.db:
+
+Table: customer_sales_area_assignments
+Columns: customer, salesOrganization, distributionChannel, division, billingIsBlockedForCustomer, completeDeliveryIsDefined, creditControlArea, currency, customerPaymentTerms, deliveryPriority, incotermsClassification, incotermsLocation1, salesGroup, salesOffice, shippingCondition, slsUnlmtdOvrdelivIsAllwd, supplyingPlant, salesDistrict, exchangeRateType
+
+Table: product_plants
+Columns: product, plant, countryOfOrigin, regionOfOrigin, productionInvtryManagedLoc, availabilityCheckType, fiscalYearVariant, profitCenter, mrpType
+
+Table: sales_order_schedule_lines
+Columns: salesOrder, salesOrderItem, scheduleLine, confirmedDeliveryDate, orderQuantityUnit, confdOrderQtyByMatlAvailCheck
+
+Table: sales_order_items
+Columns: salesOrder, salesOrderItem, salesOrderItemCategory, material, requestedQuantity, requestedQuantityUnit, transactionCurrency, netAmount, materialGroup, productionPlant, storageLocation, salesDocumentRjcnReason, itemBillingBlockReason
+
+Table: business_partners
+Columns: businessPartner, customer, businessPartnerCategory, businessPartnerFullName, businessPartnerGrouping, businessPartnerName, correspondenceLanguage, createdByUser, creationDate, creationTime, firstName, formOfAddress, industry, lastChangeDate, lastName, organizationBpName1, organizationBpName2, businessPartnerIsBlocked, isMarkedForArchiving
+
+Table: product_storage_locations
+Columns: product, plant, storageLocation, physicalInventoryBlockInd, dateOfLastPostedCntUnRstrcdStk
+
+Table: outbound_delivery_headers
+Columns: actualGoodsMovementDate, actualGoodsMovementTime, creationDate, creationTime, deliveryBlockReason, deliveryDocument, hdrGeneralIncompletionStatus, headerBillingBlockReason, lastChangeDate, overallGoodsMovementStatus, overallPickingStatus, overallProofOfDeliveryStatus, shippingPoint
+
+Table: payments_accounts_receivable
+Columns: companyCode, fiscalYear, accountingDocument, accountingDocumentItem, clearingDate, clearingAccountingDocument, clearingDocFiscalYear, amountInTransactionCurrency, transactionCurrency, amountInCompanyCodeCurrency, companyCodeCurrency, customer, invoiceReference, invoiceReferenceFiscalYear, salesDocument, salesDocumentItem, postingDate, documentDate, assignmentReference, glAccount, financialAccountType, profitCenter, costCenter
+
+Table: billing_document_cancellations
+Columns: billingDocument, billingDocumentType, creationDate, creationTime, lastChangeDateTime, billingDocumentDate, billingDocumentIsCancelled, cancelledBillingDocument, totalNetAmount, transactionCurrency, companyCode, fiscalYear, accountingDocument, soldToParty
+
+Table: customer_company_assignments
+Columns: customer, companyCode, accountingClerk, accountingClerkFaxNumber, accountingClerkInternetAddress, accountingClerkPhoneNumber, alternativePayerAccount, paymentBlockingReason, paymentMethodsList, paymentTerms, reconciliationAccount, deletionIndicator, customerAccountGroup
+
+Table: plants
+Columns: plant, plantName, valuationArea, plantCustomer, plantSupplier, factoryCalendar, defaultPurchasingOrganization, salesOrganization, addressId, plantCategory, distributionChannel, division, language, isMarkedForArchiving
+
+Table: journal_entry_items_accounts_receivable
+Columns: companyCode, fiscalYear, accountingDocument, glAccount, referenceDocument, costCenter, profitCenter, transactionCurrency, amountInTransactionCurrency, companyCodeCurrency, amountInCompanyCodeCurrency, postingDate, documentDate, accountingDocumentType, accountingDocumentItem, assignmentReference, lastChangeDateTime, customer, financialAccountType, clearingDate, clearingAccountingDocument, clearingDocFiscalYear
+
+Table: billing_document_items
+Columns: billingDocument, billingDocumentItem, material, billingQuantity, billingQuantityUnit, netAmount, transactionCurrency, referenceSdDocument, referenceSdDocumentItem
+
+Table: business_partner_addresses
+Columns: businessPartner, addressId, validityStartDate, validityEndDate, addressUuid, addressTimeZone, cityName, country, poBox, poBoxDeviatingCityName, poBoxDeviatingCountry, poBoxDeviatingRegion, poBoxIsWithoutNumber, poBoxLobbyName, poBoxPostalCode, postalCode, region, streetName, taxJurisdiction, transportZone
+
+Table: products
+Columns: product, productType, crossPlantStatus, crossPlantStatusValidityDate, creationDate, createdByUser, lastChangeDate, lastChangeDateTime, isMarkedForDeletion, productOldId, grossWeight, weightUnit, netWeight, productGroup, baseUnit, division, industrySector
+
+Table: product_descriptions
+Columns: product, language, productDescription
+
+Table: billing_document_headers
+Columns: billingDocument, billingDocumentType, creationDate, creationTime, lastChangeDateTime, billingDocumentDate, billingDocumentIsCancelled, cancelledBillingDocument, totalNetAmount, transactionCurrency, companyCode, fiscalYear, accountingDocument, soldToParty
+
+Table: outbound_delivery_items
+Columns: actualDeliveryQuantity, batch, deliveryDocument, deliveryDocumentItem, deliveryQuantityUnit, itemBillingBlockReason, lastChangeDate, plant, referenceSdDocument, referenceSdDocumentItem, storageLocation
+
+Table: sales_order_headers
+Columns: salesOrder, salesOrderType, salesOrganization, distributionChannel, organizationDivision, salesGroup, salesOffice, soldToParty, creationDate, createdByUser, lastChangeDateTime, totalNetAmount, overallDeliveryStatus, overallOrdReltdBillgStatus, overallSdDocReferenceStatus, transactionCurrency, pricingDate, requestedDeliveryDate, headerBillingBlockReason, deliveryBlockReason, incotermsClassification, incotermsLocation1, customerPaymentTerms, totalCreditCheckStatus
