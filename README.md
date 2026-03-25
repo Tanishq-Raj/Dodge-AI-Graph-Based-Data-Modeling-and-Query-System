@@ -2,7 +2,14 @@
   <img src="https://img.shields.io/badge/Dodge_AI-ERP_Explorer-0052CC?style=for-the-badge&logo=sap" alt="Dodge AI Logo" />
   <h1>🚀 Dodge AI: Forward Deployed Engineer - Task Details</h1>
   <h3>Graph-Based Data Modeling and Query System</h3>
-  
+
+| 🖥️ Component | 🛠️ Technology Stack | ⚡ Key Role |
+| :--- | :--- | :--- |
+| **Frontend** | React 18 + Vite | Premium Glassmorphic UI & Cytoscape Visualization |
+| **Backend** | FastAPI (Python) | Intent-Based SQL Engine & AI Reasoning |
+| **Database** | SQLite 3 | Relational ERP Data Storage & CTE Queries |
+| **AI Models** | DeepSeek / Gemini | Text-to-SQL Synthesis & Semantic Intent Routing |
+| **Graph** | Cytoscape.js | High-Performance Network Relationship Rendering |  
   <p align="center">
     <img src="https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB" />
     <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white" />
@@ -77,7 +84,7 @@ graph TB
         Response -->|Display| Markdown[AI Summary]
     end
 
-    subgraph Backend ["⚙️ ASP-Core Backend (FastAPI)"]
+    subgraph Backend ["⚙️ Cloud Engine (FastAPI)"]
         API -->|JSON Payload| Intent[LLM Intent Router]
         Intent -->|Classified Intent| Generator[Text-to-SQL Generator]
         Generator -->|Structured SQL| Executor[Safe SQL Executor]
@@ -101,6 +108,17 @@ graph TB
 3.  **Dynamic SQL Synthesis:** Based on the classified intent, our **Text-to-SQL Generator** builds a precise, high-performance JOIN across relational headers and items in the SQLite database.
 4.  **Graph Serialization:** The backend processes the raw SQL rowsets into a **JSON Graph Object** (Nodes & Edges), calculating vibrance colors and distinct shapes for each ERP document type.
 5.  **Interactive Rendering:** The **Cytoscape.js** engine renders the vectorized graph on the glassmorphic canvas, while the LLM summary provides a clean, human-readable answer in the chat panel.
+
+---
+
+## 🕵️ Case Study: The "Broken Link" Analysis
+Dodge AI is specifically built to find gaps in the O2C process that traditional dashboards miss.
+
+**User Query:** *"Find all incomplete flows for customer 31100001"*
+
+1.  **Intent:** Detected as `orders_without_invoice`.
+2.  **Logical JOIN:** The system identifies Sales Orders for that customer that have a matching Delivery record but **null** values in the Billing Document table.
+3.  **Visual Output:** The graph highlights the Sales Order node in **Warning Orange** and breaks the connection to the missing Billing Document, allowing the user to click for a technical explanation: *"Order is shipped but revenue is not yet recognized."*
 
 ---
 
