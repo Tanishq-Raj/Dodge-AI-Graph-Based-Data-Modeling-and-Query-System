@@ -17,6 +17,25 @@
 
 <br />
 
+## 📸 Visual Previews
+
+<div align="center">
+  <table border="0">
+    <tr>
+      <td width="50%" align="center">
+        <img src="sessions/graph_view_1774294777869.png" width="100%" alt="Dodge AI Graph View" />
+        <br /><em>Dynamic O2C Graph Visualization</em>
+      </td>
+      <td width="50%" align="center">
+        <img src="sessions/chat path.png" width="100%" alt="AI Chat Interface" />
+        <br /><em>Conversational ERP Intelligence</em>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br />
+
 ## 🔍 Overview
 Dodge AI provides a **dynamic graph visualization** and an **interactive AI chat assistant** specifically engineered for **Order-to-Cash (O2C)** SAP/ERP tabular dataset analysis. Through this interface, users can execute deep, schema-aware queries, trace complex billing flows, and pinpoint broken linkages in the supply chain with unparalleled speed.
 
@@ -34,6 +53,15 @@ Dodge AI provides a **dynamic graph visualization** and an **interactive AI chat
 ### 💾 Database Choice: Why SQLite?
 *   **Serverless SQL Power:** SQLite is completely serverless and extremely lightweight, yet allows for full SQL capability (CTEs, Joins, and Window Functions) natively.
 *   **Mirroring ERP Reality:** Since SAP/ERP datasets are strictly relational, a local relational model like SQLite beautifully mirrors the actual data behavior. This allows the LLM's **Text-to-SQL logic** to remain realistic, robust, and ready for production upgrades.
+
+---
+
+## 🌟 Key Highlights
+
+- **✨ Premium UI/UX:** Stunning **Glassmorphism Design** with smooth micro-animations and a vibrant, interactive dark/light mesh background.
+- **⚡ High-Speed Graph:** Cytoscape-powered UI allows tracing document flows (Order → Delivery → Billing) effortlessly in real-time.
+- **🛡️ Secure AI Guardrails:** Built-in safeguards ensure the AI strictly answers from your ERP data while preventing common injection/tampering attempts.
+- **🚀 Zero-Config Deployment:** Ready-to-go monorepo architecture with an automatic API proxy for Vercel + Render hosting.
 
 ---
 
