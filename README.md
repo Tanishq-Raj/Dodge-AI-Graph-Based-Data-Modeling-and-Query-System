@@ -1,101 +1,99 @@
 <div align="center">
-  <img src="https://img.shields.io/badge/Dodge_AI-ERP_Copilot-blue?style=for-the-badge&logo=sap" alt="Dodge AI Logo" />
+  <img src="https://img.shields.io/badge/Dodge_AI-ERP_Explorer-0052CC?style=for-the-badge&logo=sap" alt="Dodge AI Logo" />
   <h1>🚀 Dodge AI: # Forward Deployed Engineer - Task Details</h1>
   <h3>Graph-Based Data Modeling and Query System</h3>
-  <p><em>A powerful, visual ERP analytics tool combining dynamic graph visualization with a conversational AI Copilot to deliver deep business intelligence into the Order-to-Cash (O2C) pipeline.</em></p>
+  
+  <p align="center">
+    <img src="https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB" />
+    <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white" />
+    <img src="https://img.shields.io/badge/SQLite-07405E?style=flat-square&logo=sqlite&logoColor=white" />
+    <img src="https://img.shields.io/badge/Cytoscape-2B2B2B?style=flat-square" />
+  </p>
 
-  [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
-  [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-  [![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
-  [![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+  ---
+  
+  <p><em>"Bridging the gap between raw ERP data and actionable intelligence through schema-aware AI and high-performance graph dynamics."</em></p>
 </div>
 
 <br />
 
-## ✨ Features
-
-- **🧠 Intelligent Query Engine:** Ask questions in plain English (e.g., *"Find all stuck deliveries"* or *"Explain order 740509"*). The built-in LLM detects your exact intent, generates structured SQL, and returns human-readable summaries.
-- **🕸️ Cytoscape Graph Visualization:** Every transaction is rendered dynamically on a glassmorphic canvas. See the precise relationships between Sales Orders, Deliveries, Billing Docs, and Journals.
-- **🎨 Premium UI/UX:** Built with a stunning dark/light glassmorphic mesh UI that makes data analytics visually impressive.
-- **🚀 Zero-Config Proxy:** A fully decoupled standard monorepo setup ready for immediate Vercel/Render deployment.
+## 🔍 Overview
+Dodge AI provides a **dynamic graph visualization** and an **interactive AI chat assistant** specifically engineered for **Order-to-Cash (O2C)** SAP/ERP tabular dataset analysis. Through this interface, users can execute deep, schema-aware queries, trace complex billing flows, and pinpoint broken linkages in the supply chain with unparalleled speed.
 
 ---
 
-## 🏗️ System Architecture & Working Flow
+## 🏗️ Architecture Decisions
 
-The following sequence diagram outlines how user queries are processed and returned visually.
+### 🔩 Framework Layer: Modern Full-Stack
+*   **Dual-Engine Architecture:** Utilizing a **FastAPI (Python)** backend for high-performance data processing and **React (Vite)** for a lightweight, optimized frontend. This unified approach reduces cross-origin complexity and ensures lightning-fast hot-reloading.
+*   **Glassmorphic Styling:** Adhering to a "Utility-Plus" philosophy. While leveraging utility power for layout, we utilize **Vanilla CSS** for core design tokens, glassmorphism aesthetics, and rich micro-animations to achieve a state-of-the-art premium UI.
+
+### 🕸️ Graph Ecosystem: High-Density Visualization
+*   **Vectorized Graphing:** Powered by **Cytoscape.js** (and compatible with 2D force-directed layouts). This ensures an interactive, lag-free UI even when the ERP flow tree grows to hundreds of nodes, allowing users to zoom and pan through intricate Sales Order and Delivery relationships seamlessly.
+
+### 💾 Database Choice: Why SQLite?
+*   **Serverless SQL Power:** SQLite is completely serverless and extremely lightweight, yet allows for full SQL capability (CTEs, Joins, and Window Functions) natively.
+*   **Mirroring ERP Reality:** Since SAP/ERP datasets are strictly relational, a local relational model like SQLite beautifully mirrors the actual data behavior. This allows the LLM's **Text-to-SQL logic** to remain realistic, robust, and ready for production upgrades.
+
+---
+
+## 🚦 System Working Flow
 
 ```mermaid
-sequenceDiagram
-    participant User
-    participant Frontend as React / Vite (UI)
-    participant API as FastAPI (Backend)
-    participant LLM as Action LLM
-    participant DB as SQLite (data.db)
-
-    User->>Frontend: "Track order #740509"
-    Frontend->>API: POST /query {"query": ...}
+graph TD
+    A[User Query] --> B{Intent Detector}
+    B -- "Trace/Graph" --> C[Intent-Based SQL Generator]
+    B -- "General Analysis" --> D[Relational Query Engine]
     
-    API->>LLM: Identify Intent & Extract Entities
-    LLM-->>API: {intent: "trace_order", id: 740509}
+    C --> E[(SQLite ERP Data)]
+    D --> E
     
-    API->>DB: Execute Intent-Specific SQL
-    DB-->>API: Raw Graph Data (Nodes & Edges)
+    E --> F[Raw Data Node/Edge Processing]
+    F --> G[LLM Contextual Summarizer]
     
-    API->>LLM: Generate Natural Language Summary
-    LLM-->>API: Formatted Markdown Explanation
-    
-    API-->>Frontend: JSON {summary, nodes, edges}
-    
-    Frontend->>Frontend: Plot Graph (Cytoscape)<br/>Render Chat Bubble (Glassmorphic)
-    Frontend-->>User: Visual Graph + Smart Context
+    G --> H[Glassmorphic UI]
+    H --> I[Dynamic Graph Interaction]
 ```
+
+---
+
+## 🤖 LLM Prompting Strategy
+To make the AI capable of answering in-depth questions (e.g., tracking a broken billing workflow), we employ a rigid **Text-to-SQL Architecture**:
+
+1.  **System Context (Schema Mapping):** The prompt begins by defining the exact schema available (`sales_order_headers`, `billing_document_headers`, etc.) and the primary/foreign key relationships.
+2.  **Intent Routing:** The AI first classifies the query. If it requires querying the ERP flow, it drafts a SQL query safely, simulating execution.
+3.  **Few-Shot Examples:** Crucially for complex questions (e.g., *"Trace the full flow of billing document X"*), the AI receives few-shot prompts indicating the expected path (JOINs through items, shipments, and journals).
+
+---
+
+## 🛡️ Guardrails
+To strictly constrain the assistant to the SAP/ERP dataset:
+
+*   **Domain Whitelisting:** The core system prompt mandates: *"You are an AI assistant designed strictly for analyzing Order to Cash dataset metrics."* Queries unrelated to ERP order processing are tactfully refused.
+*   **Read-Only Enforcements:** Any generated logic restricts mutation, providing a strict read-only data isolation layer.
+*   **Null Fallbacks:** If a linkage is missing, the guardrails enforce acknowledging the break—a vital feature for pinpointing broken O2C flows.
 
 ---
 
 ## 📁 Repository Structure (Monorepo)
-Your project is now organized for professional deployment:
-```
+```text
 dodge-ai/
- ├── backend/            # FastAPI + SQLite
- │    ├── dodge_ai.py    # Main API
- │    ├── data.db        # Database
- │    └── requirements.txt
- └── frontend/           # React (Vite)
-      ├── src/           # UI Components
-      └── .env           # Environment config
+ ├── backend/            # FastAPI (Logic, Intent Handling, SQLite)
+ ├── frontend/           # React + Vite (Glassmorphic UI)
+ ├── DOCS/               # deployment guides & walkthroughs
+ └── sessions/           # development history & logs
 ```
 
 ---
 
-## 🛠️ Setup Instructions
-
-### 1. Local Development
-#### Backend (Terminal 1)
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn dodge_ai:app --host 0.0.0.0 --port 8000 --reload
-```
-
-#### Frontend (Terminal 2)
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 2. Production Deployment
-- **Backend:** Deploy on free tier at **Render.com** (Root: `backend`, Command: `uvicorn dodge_ai:app --host 0.0.0.0 --port $PORT`).
-- **Frontend:** Deploy on **Vercel** (Root: `frontend`, Framework: `Vite`).
-- **API Connectivity:** The provided `vercel.json` automatically proxies `/api/*` network calls securely to the Render backend!
-
----
-
-## 🔗 Project Links
-- [GitHub Repository](https://github.com/Tanishq-Raj/Dodge-AI-Graph-Based-Data-Modeling-and-Query-System.git)
+## 🛠️ Setup & Deployment
+- **Backend:** `cd backend && pip install -r requirements.txt && uvicorn dodge_ai:app --reload`
+- **Frontend:** `cd frontend && npm install && npm run dev`
+- **Live Hosting:** Optimized for **Render (Backend)** & **Vercel (Frontend)** with Zero-Config proxying.
 
 <div align="center">
   <br/>
-  <i>Engineered for unparalleled ERP operational intelligence.</i>
+  <b>Live Application:</b> <a href="https://dodge-ai-graph-based-data-modeling.vercel.app">dodge-ai.vercel.app</a>
+  <br/>
+  <i>Engineered by Dodge AI for High-Speed ERP Operational Intelligence.</i>
 </div>
