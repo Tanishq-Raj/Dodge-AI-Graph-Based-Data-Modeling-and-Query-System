@@ -37,7 +37,7 @@ Render provides an excellent free tier for Python web services.
    - Click "Advanced" -> "Add Environment Variable".
    - Key: `GEMINI_API_KEY` | Value: *(Paste your Gemini API key here)*
 6. Select the **Free** tier and click **Create Web Service**. 
-7. *(Optional)* After deployment finishes, copy the Render URL. If it's different from ``, you'll need to update `frontend/vercel.json` with the new URL and push that change to GitHub.
+7. *(Optional)* After deployment finishes, copy the Render URL. If it's different from `https://dodge-ai-backend-2eol.onrender.com`, you'll need to update `frontend/vercel.json` with the new URL and push that change to GitHub.
 
 ---
 
@@ -57,7 +57,8 @@ Vercel handles React apps perfectly, and the `vercel.json` is already configured
 ---
 
 ## Testing Your Live Site
-Once Vercel finishes deploying, they will provide you a live URL (e.g., ``). 
+Once Vercel finishes deploying, they will provide you a live URL:
+👉 **[https://dodge-ai-graph-based-data-modeling.vercel.app](https://dodge-ai-graph-based-data-modeling.vercel.app)**
 
 1. Visit that URL.
 2. The frontend will load and attempt to fetch the graph from `/api/graph`. 
