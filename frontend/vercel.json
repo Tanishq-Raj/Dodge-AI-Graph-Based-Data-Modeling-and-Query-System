@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://dodge-ai-erp-copilot.onrender.com/:path*"
+      "destination": "https://dodge-ai-backend-2eol.onrender.com/:path*"
     },
     {
       "source": "/(.*)",

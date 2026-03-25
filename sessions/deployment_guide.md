@@ -15,7 +15,7 @@ Both Render and Vercel deploy automatically from GitHub repositories.
    git add .
    git commit -m "Initial commit, complete with glassmorphism UI"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/dodge-ai-erp-copilot.git
+   git remote add origin https://github.com/YOUR_USERNAME/Dodge-AI-Graph-Based-Data-Modeling-and-Query-System.git
    git push -u origin main
    ```
 
@@ -37,7 +37,7 @@ Render provides an excellent free tier for Python web services.
    - Click "Advanced" -> "Add Environment Variable".
    - Key: `GEMINI_API_KEY` | Value: *(Paste your Gemini API key here)*
 6. Select the **Free** tier and click **Create Web Service**. 
-7. *(Optional)* After deployment finishes, copy the Render URL. If it's different from `https://dodge-ai-erp-copilot.onrender.com`, you'll need to update `frontend/vercel.json` with the new URL and push that change to GitHub.
+7. *(Optional)* After deployment finishes, copy the Render URL. If it's different from ``, you'll need to update `frontend/vercel.json` with the new URL and push that change to GitHub.
 
 ---
 
